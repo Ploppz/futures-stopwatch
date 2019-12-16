@@ -1,0 +1,12 @@
+[package]
+name = "futures-stopwatch"
+version = "0.1.0"
+authors = ["Erlend Langseth <3rlendhl@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+futures = "0.1.25"
+[dev-dependencies]
+tokio = "0.1.22"
