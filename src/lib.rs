@@ -6,14 +6,18 @@ use std::{
     task::{Poll, Context},
     pin::Pin,
 };
-use futures::{future::TryFuture, ready};
+use futures::ready;
 use pin_project::{pin_project, project};
 
-pub async fn stopwatch<F: Future>(inner: F) -> (F::Output, Duration) {
+pub async fn stopwatch<F: Future>(inner: F) -> (F::Output, Duration)
+    where F: Future
+{
     Stopwatch::new(inner).await
 }
-pub async fn try_stopwatch<F: TryFuture>(inner: F) -> Result<(F::Ok, Duration), F::Error> {
-    let (result, duration) = Stopwatch::new(inner).await;
+pub async fn try_stopwatch<F, T, E>(inner: F) -> Result<(T, Duration), E>
+    where F: Future<Output=Result<T, E>>
+{
+    let (result, duration): (Result<T, E>, Duration) = Stopwatch::new(inner).await;
     result.map(|x| (x, duration))
 }
 
@@ -42,11 +46,24 @@ impl<F: Future> Future for Stopwatch<F> {
     }
 }
 #[cfg(test)]
-#[tokio::test]
-async fn timer_future() {
+mod test {
+    use super::*;
     use std::time::Duration;
     use tokio::time::delay_for;
-    let ((), time) = Stopwatch::new(delay_for(Duration::from_secs(2))).await;
-    println!("Timer duration: {:?}", time);
-    assert!(time >= Duration::from_secs(2));
+    #[tokio::test]
+    async fn test_stopwatch() {
+        let ((), time) = stopwatch(delay_for(Duration::from_secs(2))).await;
+        println!("Timer duration: {:?}", time);
+        assert!(time >= Duration::from_secs(2));
+    }
+
+    #[tokio::test]
+    async fn test_try_stopwatch() {
+        let future = async {
+            Result::<(), u8>::Ok(delay_for(Duration::from_secs(2)).await)
+        };
+        let ((), time) = try_stopwatch(future).await.unwrap();
+        println!("Timer duration: {:?}", time);
+        assert!(time >= Duration::from_secs(2));
+    }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "futures-stopwatch"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Erlend Langseth <3rlendhl@gmail.com>"]
 description = "A future that reports the duration of its inner future"
 license = "MIT"
