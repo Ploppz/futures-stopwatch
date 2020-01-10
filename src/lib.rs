@@ -6,8 +6,16 @@ use std::{
     task::{Poll, Context},
     pin::Pin,
 };
-use futures::ready;
+use futures::{future::TryFuture, ready};
 use pin_project::{pin_project, project};
+
+pub async fn stopwatch<F: Future>(inner: F) -> (F::Output, Duration) {
+    Stopwatch::new(inner).await
+}
+pub async fn try_stopwatch<F: TryFuture>(inner: F) -> Result<(F::Ok, Duration), F::Error> {
+    let (result, duration) = Stopwatch::new(inner).await;
+    result.map(|x| (x, duration))
+}
 
 #[pin_project]
 pub struct Stopwatch<F> {
@@ -16,7 +24,7 @@ pub struct Stopwatch<F> {
     inner: F,
 }
 impl<F> Stopwatch<F> {
-    pub fn new(inner: F) -> Self {
+    fn new(inner: F) -> Self {
         Stopwatch {
             start_time: Instant::now(),
             inner,
