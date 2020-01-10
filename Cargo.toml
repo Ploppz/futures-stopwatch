@@ -14,4 +14,4 @@ edition = "2018"
 futures = "0.3.1"
 pin-project = "0.4.6"
 [dev-dependencies]
-tokio = {version = "0.2.9", features = ["time", "macros"]}
+tokio = {version = "0.2.9", features = ["time", "macros", "rt-threaded"]}
